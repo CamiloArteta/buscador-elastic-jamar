@@ -1,4 +1,4 @@
-import productos from '../mocks/productos.json' with { type: 'json' }
+import productos from '../mocks/productos.json' assert { type: 'json' }
 import { client } from '../elastic/client.js'
 import { appendFile, readFile, writeFile } from 'fs/promises'
 import { Synonyms } from '../synonyms/synonyms.js'
