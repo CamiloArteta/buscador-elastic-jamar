@@ -69,6 +69,7 @@ export class Searcher {
                     index: 'productos',
                     id: row.id_code,
                     body: {
+                        sku: row.sku,
                         nombre: row.nombre,
                         tag: row.tag,
                         color: colors,
@@ -93,6 +94,8 @@ export class Searcher {
             await client.indices.delete({
                 index: 'productos'
             })
+
+            await writeFile('C:/Users/carteta/Downloads/elasticsearch-8.16.1/config/synonyms/synonyms.txt', '')
 
             return ('Indice Antiguo borrado')
         } catch (error) {
@@ -273,8 +276,8 @@ export class Searcher {
                 return {
                     total: total,
                     totalPages: totalPages,
-                    currentPage: page,
-                    pageSize: size,
+                    currentPage: parseInt(page),
+                    pageSize: parseInt(size),
                     results: response.hits.hits.map((hit) => hit._source)
                 }
             }
