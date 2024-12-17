@@ -1,4 +1,4 @@
-import productos from '../mocks/productos.json' assert { type: 'json' }
+import productos from '../mocks/productos.json' with { type: 'json' }
 import { client } from '../elastic/client.js'
 import { appendFile, readFile, writeFile } from 'fs/promises'
 import { Synonyms } from '../synonyms/synonyms.js'
@@ -100,11 +100,12 @@ export class Searcher {
         }
     }
 
-    static async search(query, color, categoria, startPrecio, endPrecio, orderWay, pais, tienda) {
+    static async search(query, color, categoria, startPrecio, endPrecio, orderWay, pais, tienda, page = 1, size = 10) {
         const consulta = query.trim()
         const consultaSplit = consulta.split(' ')
         const consultaLength = consultaSplit[0].length
         const fuzzy = consultaLength <= 4 ? 1 : 2
+        const from = (page - 1) * size
         
         try {
             const elasticQuery = {
@@ -130,7 +131,9 @@ export class Searcher {
                         }
                     },
                     sort: [],
-                    size: 10000
+                    size: size,
+                    from: from,
+                    track_total_hits: true
                 }
             }
 
@@ -157,7 +160,9 @@ export class Searcher {
                         }
                     },
                     sort: [],
-                    size: 10000
+                    size: size,
+                    from: from,
+                    track_total_hits: true
                 }
             }
 
@@ -250,10 +255,28 @@ export class Searcher {
 
             if (!consulta) {
                 const response = await client.search(elasticQueryNone)
-                return response.hits.hits.map((hit) => hit._source)
+                const total = response.hits.total.value
+                const totalPages = Math.ceil(total / size)
+
+                return {
+                    total: total,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    pageSize: size,
+                    results: response.hits.hits.map((hit) => hit._source)
+                }
             } else {
                 const response = await client.search(elasticQuery)
-                return response.hits.hits.map((hit) => hit._source)
+                const total = response.hits.total.value
+                const totalPages = Math.ceil(total / size)
+
+                return {
+                    total: total,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    pageSize: size,
+                    results: response.hits.hits.map((hit) => hit._source)
+                }
             }
         } catch (error) {
             throw new Error(`Error al buscar la query: ${error.message}`)
