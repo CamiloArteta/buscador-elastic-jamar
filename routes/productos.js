@@ -14,13 +14,13 @@ productRouter.post('/create-index', async (req, res) => {
 })
 
 productRouter.get('/search', async (req, res) => {
-    const { query, color, categoria, startPrecio, endPrecio, order, tienda, page } = req.query
+    const { query, color, categoria, startPrecio, endPrecio, order, tienda, page, size } = req.query
 
     const consulta = !query ? "" : query
     const pais = 'JA'
 
     try {
-        const result = await Searcher.search(consulta, color, categoria, startPrecio, endPrecio, order, pais, tienda, page)
+        const result = await Searcher.search(consulta, color, categoria, startPrecio, endPrecio, order, pais, tienda, page, size)
 
         res.send(result)
     } catch (error) {
